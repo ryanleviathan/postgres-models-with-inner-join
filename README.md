@@ -1,0 +1,1 @@
+# postgres-models-with-inner-join
