@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS customers;
 CREATE TABLE orders (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   item TEXT NOT NULL,
-  price INT NOT NULL
+  price INT NOT NULL (price > 0)
 );
 
 CREATE TABLE customer (
