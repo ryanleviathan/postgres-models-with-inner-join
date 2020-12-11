@@ -89,4 +89,109 @@ describe('postgres-models-with-inner-join routes', () => {
 
     expect(res.body).toEqual(customer);
   });
+
+  it('creates a new order', async() => {
+    const customer = await Customer.insert({
+      customerName: 'Duncan Idaho'
+    });
+    
+    const res = await request(app)
+      .post('/api/v1/orders')
+      .send({
+        item: 'Xbox Series X',
+        itemPrice: 499.99,
+        customerId: customer.id 
+      });
+
+    expect(res.body).toEqual({
+      id: '1',
+      item: 'Xbox Series X',
+      itemPrice: 499.99,
+      customerId: customer.id
+    });
+  });
+
+  it('finds a order by id', async() => {
+    const customer = await Customer.insert({
+      customerName: 'Duncan Idaho'
+    });
+    
+    const order = await Order.insert({
+      item: 'Xbox Series X',
+      itemPrice: 499.99,
+      customerId: customer.id
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/orders/${order.id}`);
+
+    expect(res.body).toEqual({
+      id: '1',
+      item: 'Xbox Series X',
+      itemPrice: 499.99,
+      customerId: customer.id
+    });
+  });
+
+  it('finds all orders', async() => {
+    const customer = await Customer.insert({
+      customerName: 'Duncan Idaho'
+    });
+    
+    const orders = await Promise.all([
+      { item: 'Xbox Series X', itemPrice: 499.99, customerId: customer.id },
+      { item: 'Cyberpunk 2077', itemPrice: 59.99, customerId: customer.id },
+      { item: 'Seagate Storage Expansion Card', itemPrice: 219.99, customerId: customer.id }
+    ].map(order => Order.insert(order)));
+
+    const res = await request(app)
+      .get('/api/v1/orders');
+
+    expect(res.body).toEqual(expect.arrayContaining(orders));
+    expect(res.body).toHaveLength(orders.length);
+  });
+
+  it('updates a order by id', async() => {
+    const customer = await Customer.insert({
+      customerName: 'Duncan Idaho'
+    });
+    
+    const order = await Order.insert({
+      item: 'Xbox Series X',
+      itemPrice: 499.99,
+      customerId: customer.id
+    });
+    
+    const res = await request(app)
+      .put(`/api/v1/orders/${order.id}`)
+      .send({
+        item: 'Xbox Series S',
+        itemPrice: 299.99,
+        customerId: customer.id
+      });
+
+    expect(res.body).toEqual({
+      id: '1',
+      item: 'Xbox Series S',
+      itemPrice: 299.99,
+      customerId: customer.id
+    });
+  });
+
+  it('deletes a order by id', async() => {
+    const customer = await Customer.insert({
+      customerName: 'Duncan Idaho'
+    });
+    
+    const order = await Order.insert({
+      item: 'Xbox Series S',
+      itemPrice: 299.99,
+      customerId: customer.id
+    });
+    
+    const res = await request(app)
+      .delete(`/api/v1/orders/${order.id}`);
+
+    expect(res.body).toEqual(order);
+  });  
 });
